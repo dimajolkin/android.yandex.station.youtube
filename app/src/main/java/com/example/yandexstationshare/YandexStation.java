@@ -1,0 +1,13 @@
+package com.example.yandexstationshare;
+
+public class YandexStation {
+    protected String id;
+
+    public YandexStation(String id) {
+        this.id = id;
+    }
+
+    public String getId() {
+        return id;
+    }
+}
