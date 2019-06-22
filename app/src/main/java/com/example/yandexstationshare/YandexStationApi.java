@@ -42,10 +42,10 @@ public class YandexStationApi {
 }
 
 class Message {
-    private YoutubeVideo video;
+    private VideoInterface video;
     private YandexUser user;
 
-    public Message(YandexUser user, YoutubeVideo video) {
+    public Message(YandexUser user, VideoInterface video) {
         this.user = user;
         this.video = video;
     }
@@ -54,12 +54,16 @@ class Message {
         return user;
     }
 
-    public YoutubeVideo getVideo() {
+    public VideoInterface getVideo() {
         return video;
     }
 }
 
-class YoutubeVideo {
+interface VideoInterface {
+    public JSONObject getJson() throws JSONException;
+}
+
+class YoutubeVideo implements VideoInterface {
     final private static String PlayerId = "youtube";
     final private static String ProviderItemId = "http://www.youtube.com/watch?v=";
     final private static String ProviderName = "youtube.com";
