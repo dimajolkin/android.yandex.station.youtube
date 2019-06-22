@@ -26,7 +26,6 @@ public class WebActivity extends AppCompatActivity {
     final private static String TAG = "Main";
 
 
-
     public static final YandexStationApi yandexStationApi = new YandexStationApi();
 
     @Override
@@ -36,8 +35,6 @@ public class WebActivity extends AppCompatActivity {
         myWebView.getSettings().setJavaScriptEnabled(true);
         myWebView.setWebViewClient(new MyWebViewClient(new EventAfterRegister() {
             public void register(YandexUser user) {
-
-
                 yandexStationApi.init(user);
                 Toast toast = Toast.makeText(getApplicationContext(),
                         "Авторизован",

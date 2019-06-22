@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.sql.Timestamp;
 
 
 public class YandexStationApi {
@@ -20,6 +21,8 @@ public class YandexStationApi {
 
     public void init(YandexUser user) {
         user.setStation(new YandexStation(YANDEX_STATION_DEVICE_ID));
+        //(new AsyncGetStationsRequest()).execute(this, user);
+
         this.user = user;
     }
 
@@ -34,6 +37,12 @@ public class YandexStationApi {
     public String getVideoStation()
     {
         return host + "/video/station";
+    }
+
+    public String getStationsItems()
+    {
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+        return "https://quasar.yandex.ru/devices_online_stats?_=" + String.valueOf(timestamp.getTime());
     }
 
     public String getVideoURL() {
@@ -88,6 +97,46 @@ class YoutubeVideo implements VideoInterface {
         return msg;
     }
 }
+
+
+class AsyncGetStationsRequest extends AsyncTask<Object, Object, Object> {
+
+    @Override
+    protected String doInBackground(Object[] objects) {
+        YandexStationApi api = (YandexStationApi) objects[0];
+        YandexUser user = (YandexUser) objects[1];
+
+        try {
+            Log.e("Main", "SUPER FILED");
+            URL url = new URL(api.getStationsItems());
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            //conn.setRequestProperty("Content-Type", "application/json; charset=utf-8");
+            //conn.setRequestProperty("Accept", "application/json, text/javascript, */*; q=0.01");
+            conn.setRequestProperty("cookie", "Session_id=" + user.getSession());
+            //conn.setRequestProperty("x-csrf-token", user.getToken());
+            conn.connect();
+
+            Log.e("Main", conn.getResponseMessage());
+            Log.e("Main", "????");
+            return conn.getResponseMessage();
+
+        } catch (IOException e) {
+            Log.e("Main", e.getMessage());
+            e.printStackTrace();
+        }
+
+        return "";
+    }
+
+    private void setPostRequestContent(HttpURLConnection conn, JSONObject jsonObject) throws IOException {
+
+        OutputStream op = conn.getOutputStream();
+        op.write(jsonObject.toString().getBytes());
+        op.close();
+    }
+}
+
 
 class AsyncRequest extends AsyncTask<Object, Object, Object> {
 
