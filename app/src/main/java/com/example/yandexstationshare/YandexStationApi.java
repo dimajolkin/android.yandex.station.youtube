@@ -3,6 +3,7 @@ package com.example.yandexstationshare;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -11,13 +12,20 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.sql.Timestamp;
+import java.util.logging.Logger;
 
 
 public class YandexStationApi {
+    private Logger logger;
+
     //@TODO choice your yandex station ID
     final private static String YANDEX_STATION_DEVICE_ID = "04107884c9144c12030f";
     private String host = "https://yandex.ru";
     private YandexUser user;
+
+//    YandexStationApi(@NotNull Logger logger) {
+//        this.logger = logger;
+//    }
 
     public void init(YandexUser user) {
         user.setStation(new YandexStation(YANDEX_STATION_DEVICE_ID));
@@ -28,10 +36,14 @@ public class YandexStationApi {
 
     public void send(URL youtubeURL) {
         String videoId = youtubeURL.getPath().substring(1);
-        (new AsyncRequest()).execute(this, new Message(
+        execute(new Message(
                 this.user,
                 new YoutubeVideo(videoId)
         ));
+    }
+
+    private void execute(Message message) {
+        (new AsyncRequest()).execute(this, message);
     }
 
     public String getVideoStation()
@@ -107,27 +119,25 @@ class AsyncGetStationsRequest extends AsyncTask<Object, Object, Object> {
         YandexUser user = (YandexUser) objects[1];
 
         try {
-            Log.e("Main", "SUPER FILED");
-            URL url = new URL(api.getStationsItems());
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-            //conn.setRequestProperty("Content-Type", "application/json; charset=utf-8");
-            //conn.setRequestProperty("Accept", "application/json, text/javascript, */*; q=0.01");
-            conn.setRequestProperty("cookie", "Session_id=" + user.getSession());
-            //conn.setRequestProperty("x-csrf-token", user.getToken());
-            conn.connect();
-
-            Log.e("Main", conn.getResponseMessage());
-            Log.e("Main", "????");
-            return conn.getResponseMessage();
-
+            execute(api, user);
         } catch (IOException e) {
-            Log.e("Main", e.getMessage());
+            //Log.e("Main", e.getMessage());
             e.printStackTrace();
         }
 
         return "";
     }
+
+    public String execute(YandexStationApi api, YandexUser user) throws IOException {
+        URL url = new URL(api.getStationsItems());
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("GET");
+        conn.setRequestProperty("cookie", "Session_id=" + user.getSession());
+        conn.connect();
+
+        return conn.getResponseMessage();
+    }
+
 
     private void setPostRequestContent(HttpURLConnection conn, JSONObject jsonObject) throws IOException {
 

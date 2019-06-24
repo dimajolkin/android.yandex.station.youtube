@@ -17,6 +17,7 @@ import android.widget.Toast;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.logging.Logger;
 
 /**
  *
