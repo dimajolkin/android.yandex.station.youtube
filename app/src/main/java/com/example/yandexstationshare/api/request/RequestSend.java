@@ -1,6 +1,7 @@
 package com.example.yandexstationshare.api.request;
 
 import com.example.yandexstationshare.api.models.VideoMessage;
+import com.example.yandexstationshare.logger.Logger;
 import com.google.gson.Gson;
 import com.google.gson.annotations.SerializedName;
 
@@ -16,6 +17,7 @@ public class RequestSend implements RequestInterface {
 
     final private static String HOST = "https://yandex.ru";
     private VideoMessage message;
+
     private static class Result {
         @SerializedName("code")
         private int code;

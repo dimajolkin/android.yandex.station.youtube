@@ -11,6 +11,9 @@ import com.example.yandexstationshare.api.models.YandexUser;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+
 public class MyWebViewClient extends WebViewClient {
 
     final private static String TAG = "Main";
@@ -24,11 +27,6 @@ public class MyWebViewClient extends WebViewClient {
     }
 
     protected boolean iSeeViewoPage = false;
-
-    public boolean shouldOverrideUrlLoading(WebView view, String url) {
-        //True if the host application wants to leave the current WebView and handle the url itself, otherwise return false.
-        return true;
-    }
 
     protected static class Callback implements ValueCallback<String> {
         private WebView view;
@@ -65,17 +63,29 @@ public class MyWebViewClient extends WebViewClient {
         String cookies = CookieManager.getInstance().getCookie(url);
         session = getCookie("Session_id", cookies);
         if (session == null) {
+            super.onPageFinished(view, url);
             return;
         }
 
-        Log.d(TAG, url);
-        if (!iSeeViewoPage) {
-            iSeeViewoPage = true;
-            view.evaluateJavascript(
-                    "(function(){return JSON.parse(document.getElementsByClassName('quasar-controller_with-devices')[0].getAttribute('data-bem'));})();",
-                    new Callback(view, this.afterRegister)
-            );
+        try {
+            URL urlObject = new URL(url);
+
+            if (urlObject.getPath().equals("/profile")) {
+                view.loadUrl("https://yandex.ru/video/touch/search?text=youtube");
+            }
+
+            if (urlObject.getPath().equals("/video/touch/search")) {
+                view.evaluateJavascript(
+                        "(function(){return JSON.parse(document.getElementsByClassName('quasar-controller_with-devices')[0].getAttribute('data-bem'));})();",
+                        new Callback(view, this.afterRegister)
+                );
+            }
+
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
         }
+
+        super.onPageFinished(view, url);
     }
 
     protected String getCookie(String cookieName, String cookies) {

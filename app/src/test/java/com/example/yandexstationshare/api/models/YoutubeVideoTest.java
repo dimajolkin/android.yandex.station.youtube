@@ -4,6 +4,8 @@ import com.google.gson.Gson;
 
 import junit.framework.TestCase;
 
+import java.net.URL;
+
 public class YoutubeVideoTest extends TestCase {
     final private static String VIDEO_JSON = "{" +
             "\"player_id\":\"youtube\"," +
@@ -20,5 +22,11 @@ public class YoutubeVideoTest extends TestCase {
         String json = gson.toJson(video);
 
         assertEquals(json, VIDEO_JSON);
+    }
+
+    public void testParseVideoId() throws Exception {
+        assertEquals("VB5xtFwS-f0", YoutubeVideo.parseVideoId(new URL("https://youtu.be/VB5xtFwS-f0")));
+        assertEquals("VB5xtFwS-f1", YoutubeVideo.parseVideoId(new URL("http://www.youtube.com/watch?v=VB5xtFwS-f1")));
+        assertEquals("VB5xtFwS-f2", YoutubeVideo.parseVideoId(new URL("http://youtube.com/watch?v=VB5xtFwS-f2")));
     }
 }

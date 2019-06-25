@@ -3,15 +3,19 @@ package com.example.yandexstationshare.ui;
 import android.content.Intent;
 import android.os.Bundle;
 
-import com.example.yandexstationshare.ui.webview.EventAfterRegister;
+import com.example.yandexstationshare.logger.DefautLogger;
+import com.example.yandexstationshare.logger.Logger;
+import com.example.yandexstationshare.logger.NullLogger;
 import com.example.yandexstationshare.ui.webview.MyWebViewClient;
 import com.example.yandexstationshare.api.models.YandexUser;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.util.Log;
+import android.webkit.CookieManager;
 import android.webkit.WebView;
 import android.widget.Toast;
+
 import com.example.yandexstationshare.api.Api;
 
 import java.net.MalformedURLException;
@@ -24,39 +28,43 @@ public class WebActivity extends AppCompatActivity {
 
     final private static String TAG = "Main";
 
-    public static final Api api = new Api();
+    final private static Logger logger = new DefautLogger();
+    final private static Api api = new Api(logger);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //CookieManager.getInstance().flush();
+
         final WebView myWebView = new WebView(this);
         myWebView.getSettings().setJavaScriptEnabled(true);
-        myWebView.setWebViewClient(new MyWebViewClient(new EventAfterRegister() {
-            public void register(YandexUser user) {
+        myWebView.setWebViewClient(new MyWebViewClient((YandexUser user) -> {
+            api.authorization(user);
 
-                api.authorization(user);
-                Toast toast = Toast.makeText(getApplicationContext(),
-                        "Авторизован",
-                        Toast.LENGTH_SHORT
-                );
-                toast.show();
+            Toast toast = Toast.makeText(getApplicationContext(),
+                    "Авторизован",
+                    Toast.LENGTH_SHORT
+            );
+            toast.show();
 
-                send();
+            if (send()) {
                 finish();
             }
         }));
 
-        myWebView.loadUrl(api.getVideoURL());
+        myWebView.loadUrl("https://passport.yandex.ru/auth/welcome?backpath=https://yandex.ru&origin=home_touch_new");
         setContentView(myWebView);
     }
 
-    protected void send() {
+    protected boolean send() {
         Intent intent = getIntent();
         String action = intent.getAction();
         String type = intent.getType();
         if (Intent.ACTION_SEND.equals(action) && type != null) {
             handleSendURL(intent);
+            return true;
         }
+        return false;
     }
 
 
