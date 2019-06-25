@@ -1,8 +1,12 @@
 package com.example.yandexstationshare.api.models;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
 import junit.framework.TestCase;
+
+import org.json.JSONObject;
 
 import java.net.URL;
 
@@ -22,6 +26,12 @@ public class YoutubeVideoTest extends TestCase {
         String json = gson.toJson(video);
 
         assertEquals(json, VIDEO_JSON);
+    }
+
+    public void testCreateJsonObject() {
+        YoutubeVideo video = new YoutubeVideo("12345");
+        JsonObject json =  new Gson().toJsonTree(video).getAsJsonObject();
+        assertEquals(json.get("player_id").getAsString(), "youtube");
     }
 
     public void testParseVideoId() throws Exception {

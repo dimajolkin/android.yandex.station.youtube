@@ -1,5 +1,8 @@
 package com.example.yandexstationshare.api;
 
+import android.os.AsyncTask;
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 
 import com.example.yandexstationshare.api.models.VideoMessage;
@@ -23,17 +26,19 @@ public class Api {
         this.user = user;
     }
 
-    public void send(URL url) {
+    public YandexUser getUser() {
+        return user;
+    }
+
+    public boolean isAuth() {
+        return user != null;
+    }
+
+
+    public void send(URL url) throws Exception {
         String videoId = YoutubeVideo.parseVideoId(url);
         RequestSend requestSend = new RequestSend(new VideoMessage(user, new YoutubeVideo(videoId)));
-
-        new Thread(() -> {
-            try {
-                requestSend.execute();
-            } catch (Exception ex) {
-                logger.exception(ex);
-            }
-        }).start();
+        requestSend.execute();
     }
 
     public String getVideoURL() {

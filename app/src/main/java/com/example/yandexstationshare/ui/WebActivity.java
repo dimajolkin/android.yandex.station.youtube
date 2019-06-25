@@ -1,6 +1,8 @@
 package com.example.yandexstationshare.ui;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -13,7 +15,9 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.yandexstationshare.R;
 import com.example.yandexstationshare.api.Api;
+import com.example.yandexstationshare.api.models.Station;
 import com.example.yandexstationshare.api.models.YandexUser;
+import com.example.yandexstationshare.api.request.RequestSend;
 import com.example.yandexstationshare.logger.DefautLogger;
 import com.example.yandexstationshare.logger.Logger;
 import com.example.yandexstationshare.ui.webview.MyWebViewClient;
@@ -31,41 +35,72 @@ public class WebActivity extends AppCompatActivity {
     final private static Logger logger = new DefautLogger();
     final private static Api api = new Api(logger);
 
-    private void onAuth() {
 
+    final class SendTask extends AsyncTask<URL, Void, URL> {
+        @Override
+        protected URL doInBackground(URL[] objects) {
+            try {
+                api.send(objects[0]);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            return objects[0];
+        }
+
+        @Override
+        protected void onPostExecute(URL url) {
+            Toast toast = Toast.makeText(getApplicationContext(),
+                    url.toString(),
+                    Toast.LENGTH_SHORT
+            );
+            toast.show();
+
+            super.onPostExecute(url);
+        }
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        final WebView myWebView = new WebView(this);
-        myWebView.getSettings().setJavaScriptEnabled(true);
-        myWebView.setWebViewClient(new MyWebViewClient((YandexUser user) -> {
-            api.authorization(user);
+        if (!api.isAuth()) {
+            final WebView myWebView = new WebView(this);
+            myWebView.getSettings().setJavaScriptEnabled(true);
+            myWebView.setWebViewClient(new MyWebViewClient((YandexUser user) -> {
+                user.setStation(new Station("04107884c9144c12030f", ""));
+                api.authorization(user);
 
-            Toast toast = Toast.makeText(getApplicationContext(),
-                    "Авторизован",
-                    Toast.LENGTH_SHORT
-            );
-            toast.show();
-            if (send()) {
-                finish();
-            }
-
-            myWebView.setVisibility(View.GONE);
-            setContentView(R.layout.activity_web);
-            TextView text = (TextView) findViewById(R.id.textView);
-            TextView text1 = (TextView) findViewById(R.id.textView2);
-
-            text.setText("Token: " + user.getToken());
-            text1.setText("Session: " + user.getSession());
+                Toast toast = Toast.makeText(getApplicationContext(),
+                        "Авторизован",
+                        Toast.LENGTH_SHORT
+                );
+                toast.show();
+                myWebView.setVisibility(View.GONE);
+                onAuth();
+            }));
 
 
-        }));
+            myWebView.loadUrl("https://passport.yandex.ru/auth/welcome");
+            setContentView(myWebView);
+        } else {
+            onAuth();
+        }
+    }
 
-        myWebView.loadUrl("https://passport.yandex.ru/auth/welcome");
-        setContentView(myWebView);
+    protected void onAuth() {
+        setContentView(R.layout.activity_web);
+        YandexUser user = api.getUser();
+        setContentView(R.layout.activity_web);
+        TextView text = (TextView) findViewById(R.id.textView);
+        TextView text1 = (TextView) findViewById(R.id.textView2);
+
+        text.setText("Token: " + user.getToken());
+        text1.setText("Session: " + user.getSession());
+
+        if (send()) {
+            finish();
+        }
     }
 
 
@@ -88,13 +123,9 @@ public class WebActivity extends AppCompatActivity {
 
             if (sharedText != null) {
                 URL url = new URL(sharedText);
-                api.send(url);
-                Toast toast = Toast.makeText(getApplicationContext(),
-                        sharedText,
-                        Toast.LENGTH_SHORT
-                );
-                toast.show();
 
+                SendTask task = new SendTask();
+                task.execute(url);
             }
         } catch (MalformedURLException e) {
             e.printStackTrace();

@@ -1,8 +1,11 @@
 package com.example.yandexstationshare.api.request;
 
+import android.util.Log;
+
 import com.example.yandexstationshare.api.models.VideoMessage;
 import com.example.yandexstationshare.logger.Logger;
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.google.gson.annotations.SerializedName;
 
 import org.apache.commons.io.IOUtils;
@@ -45,13 +48,15 @@ public class RequestSend implements RequestInterface {
     }
 
     protected String getResponse() throws Exception {
-        URL url = new URL(HOST + "/video/touch/search?text=youtube");
+        URL url = new URL(HOST + "/video/station");
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Content-Type", "application/json; charset=utf-8");
         conn.setRequestProperty("Accept", "application/json, text/javascript, */*; q=0.01");
         conn.setRequestProperty("cookie", "Session_id=" + message.getUser().getSession());
         conn.setRequestProperty("x-csrf-token", message.getUser().getToken());
+
+        Log.e("Main", message.toJson().toString());
 
         setPostRequestContent(conn, message.toJson());
         conn.connect();
@@ -66,10 +71,11 @@ public class RequestSend implements RequestInterface {
     @Override
     public void execute() throws Exception {
         String response = getResponse();
-        Result result = (new Gson()).fromJson(response, Result.class);
+        Log.e("Main", response);
+//        Result result = (new Gson()).fromJson(response, Result.class);
     }
 
-    private void setPostRequestContent(HttpURLConnection conn, JSONObject jsonObject) throws IOException {
+    private void setPostRequestContent(HttpURLConnection conn, JsonObject jsonObject) throws IOException {
 
         OutputStream op = conn.getOutputStream();
         op.write(jsonObject.toString().getBytes());

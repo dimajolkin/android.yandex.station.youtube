@@ -1,6 +1,7 @@
 package com.example.yandexstationshare.api.models;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -18,11 +19,11 @@ public class VideoMessage {
         return user;
     }
 
-    public JSONObject toJson() throws JSONException {
+    public JsonObject toJson() {
 
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("device", user.getStation().getId());
-        jsonObject.put("msg", (new Gson()).toJson(video));
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("device", user.getStation().getId());
+        jsonObject.add("msg", (new Gson().toJsonTree(video).getAsJsonObject()));
 
         return jsonObject;
     }
