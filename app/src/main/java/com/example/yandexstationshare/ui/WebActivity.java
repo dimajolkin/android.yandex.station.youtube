@@ -3,21 +3,19 @@ package com.example.yandexstationshare.ui;
 import android.content.Intent;
 import android.os.Bundle;
 
-import com.example.yandexstationshare.EventAfterRegister;
-import com.example.yandexstationshare.MyWebViewClient;
-import com.example.yandexstationshare.YandexStation;
-import com.example.yandexstationshare.YandexStationApi;
-import com.example.yandexstationshare.YandexUser;
+import com.example.yandexstationshare.ui.webview.EventAfterRegister;
+import com.example.yandexstationshare.ui.webview.MyWebViewClient;
+import com.example.yandexstationshare.api.models.YandexUser;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.util.Log;
 import android.webkit.WebView;
 import android.widget.Toast;
+import com.example.yandexstationshare.api.Api;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.logging.Logger;
 
 /**
  *
@@ -26,8 +24,7 @@ public class WebActivity extends AppCompatActivity {
 
     final private static String TAG = "Main";
 
-
-    public static final YandexStationApi yandexStationApi = new YandexStationApi();
+    public static final Api api = new Api();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,7 +33,8 @@ public class WebActivity extends AppCompatActivity {
         myWebView.getSettings().setJavaScriptEnabled(true);
         myWebView.setWebViewClient(new MyWebViewClient(new EventAfterRegister() {
             public void register(YandexUser user) {
-                yandexStationApi.init(user);
+
+                api.authorization(user);
                 Toast toast = Toast.makeText(getApplicationContext(),
                         "Авторизован",
                         Toast.LENGTH_SHORT
@@ -48,7 +46,7 @@ public class WebActivity extends AppCompatActivity {
             }
         }));
 
-        myWebView.loadUrl(yandexStationApi.getVideoURL());
+        myWebView.loadUrl(api.getVideoURL());
         setContentView(myWebView);
     }
 
@@ -69,7 +67,7 @@ public class WebActivity extends AppCompatActivity {
 
             if (sharedText != null) {
                 URL url = new URL(sharedText);
-                yandexStationApi.send(url);
+                api.send(url);
                 Toast toast = Toast.makeText(getApplicationContext(),
                         sharedText,
                         Toast.LENGTH_SHORT

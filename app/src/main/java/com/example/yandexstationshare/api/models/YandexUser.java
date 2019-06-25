@@ -1,9 +1,9 @@
-package com.example.yandexstationshare;
+package com.example.yandexstationshare.api.models;
 
 public class YandexUser {
     private String token;
     private String session;
-    private YandexStation station;
+    private Station station;
 
     public YandexUser(String token, String session) {
         this.token = token;
@@ -18,11 +18,11 @@ public class YandexUser {
         return session;
     }
 
-    public void setStation(YandexStation station) {
+    public void setStation(Station station) {
         this.station = station;
     }
 
-    public YandexStation getStation() {
+    public Station getStation() {
         return station;
     }
 }

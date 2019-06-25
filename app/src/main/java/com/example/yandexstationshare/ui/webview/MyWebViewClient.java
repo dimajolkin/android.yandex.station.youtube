@@ -1,10 +1,12 @@
-package com.example.yandexstationshare;
+package com.example.yandexstationshare.ui.webview;
 
 import android.util.Log;
 import android.webkit.CookieManager;
 import android.webkit.ValueCallback;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+
+import com.example.yandexstationshare.api.models.YandexUser;
 
 import org.json.JSONException;
 import org.json.JSONObject;
