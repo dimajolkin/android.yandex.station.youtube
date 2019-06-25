@@ -2,21 +2,21 @@ package com.example.yandexstationshare.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
-
-import com.example.yandexstationshare.logger.DefautLogger;
-import com.example.yandexstationshare.logger.Logger;
-import com.example.yandexstationshare.logger.NullLogger;
-import com.example.yandexstationshare.ui.webview.MyWebViewClient;
-import com.example.yandexstationshare.api.models.YandexUser;
+import android.util.Log;
+import android.view.View;
+import android.webkit.CookieManager;
+import android.webkit.WebView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.util.Log;
-import android.webkit.CookieManager;
-import android.webkit.WebView;
-import android.widget.Toast;
-
+import com.example.yandexstationshare.R;
 import com.example.yandexstationshare.api.Api;
+import com.example.yandexstationshare.api.models.YandexUser;
+import com.example.yandexstationshare.logger.DefautLogger;
+import com.example.yandexstationshare.logger.Logger;
+import com.example.yandexstationshare.ui.webview.MyWebViewClient;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -31,10 +31,13 @@ public class WebActivity extends AppCompatActivity {
     final private static Logger logger = new DefautLogger();
     final private static Api api = new Api(logger);
 
+    private void onAuth() {
+
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //CookieManager.getInstance().flush();
 
         final WebView myWebView = new WebView(this);
         myWebView.getSettings().setJavaScriptEnabled(true);
@@ -46,15 +49,25 @@ public class WebActivity extends AppCompatActivity {
                     Toast.LENGTH_SHORT
             );
             toast.show();
-
             if (send()) {
                 finish();
             }
+
+            myWebView.setVisibility(View.GONE);
+            setContentView(R.layout.activity_web);
+            TextView text = (TextView) findViewById(R.id.textView);
+            TextView text1 = (TextView) findViewById(R.id.textView2);
+
+            text.setText("Token: " + user.getToken());
+            text1.setText("Session: " + user.getSession());
+
+
         }));
 
-        myWebView.loadUrl("https://passport.yandex.ru/auth/welcome?backpath=https://yandex.ru&origin=home_touch_new");
+        myWebView.loadUrl("https://passport.yandex.ru/auth/welcome");
         setContentView(myWebView);
     }
+
 
     protected boolean send() {
         Intent intent = getIntent();

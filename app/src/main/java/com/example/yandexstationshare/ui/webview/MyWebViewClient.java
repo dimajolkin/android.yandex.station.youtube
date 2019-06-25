@@ -26,8 +26,6 @@ public class MyWebViewClient extends WebViewClient {
         this.afterRegister = callback;
     }
 
-    protected boolean iSeeViewoPage = false;
-
     protected static class Callback implements ValueCallback<String> {
         private WebView view;
         private EventAfterRegister afterRegister;
@@ -39,12 +37,13 @@ public class MyWebViewClient extends WebViewClient {
 
         public void onReceiveValue(String json) {
             try {
+                if (json.equals("{}")) {
+                    return;
+                }
                 view.stopLoading();
-                view.destroy();
-
                 JSONObject object = new JSONObject(json);
                 JSONObject content = object.getJSONObject("quasar-controller");
-
+                Log.e("Main", json);
                 Log.d("Main", content.getString("token"));
                 token = content.getString("token");
                 Log.d("Main", "Your Auth:" + session);
@@ -53,15 +52,23 @@ public class MyWebViewClient extends WebViewClient {
                 afterRegister.register(new YandexUser(token, session));
 
             } catch (JSONException e) {
-                e.printStackTrace();
+                //e.printStackTrace();
             }
         }
     }
+
+    private String js = "var element = document.getElementsByClassName('quasar-controller_with-devices')[0] \n" +
+            "if (!element) return {}; \n" +
+            "return JSON.parse(element.getAttribute('data-bem'));";
+
 
     @Override
     public void onPageFinished(final WebView view, String url) {
         String cookies = CookieManager.getInstance().getCookie(url);
         session = getCookie("Session_id", cookies);
+        Log.e("Main", session);
+        Log.e("Main", url);
+
         if (session == null) {
             super.onPageFinished(view, url);
             return;
@@ -70,13 +77,15 @@ public class MyWebViewClient extends WebViewClient {
         try {
             URL urlObject = new URL(url);
 
-            if (urlObject.getPath().equals("/profile")) {
+            if (urlObject.getPath().equals("/profile") || urlObject.getPath().equals("/auth/list")) {
                 view.loadUrl("https://yandex.ru/video/touch/search?text=youtube");
+                return;
             }
 
             if (urlObject.getPath().equals("/video/touch/search")) {
+
                 view.evaluateJavascript(
-                        "(function(){return JSON.parse(document.getElementsByClassName('quasar-controller_with-devices')[0].getAttribute('data-bem'));})();",
+                        "(function(){" + js +"})();",
                         new Callback(view, this.afterRegister)
                 );
             }
