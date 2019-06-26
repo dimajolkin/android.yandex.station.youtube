@@ -138,7 +138,7 @@ public class WebActivity extends AppCompatActivity {
 
         text.setText("Token: " + user.getToken());
         text1.setText("Session: " + user.getSession());
-        Station station = (Station) stationStorage.get("station");
+        Station station = stationStorage.get("station");
 
         text1.setText("Station: " + station.getName());
 

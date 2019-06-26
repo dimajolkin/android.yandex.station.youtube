@@ -13,15 +13,25 @@ import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
-public class Storage<ValueObject> {
+public class Storage<T extends Object> {
+
+    protected Class<T> entityClass;
 
     private Context context;
 
     public Storage(Context context) {
         this.context = context;
+        //Get "T" and assign it to this.entityClass
+        ParameterizedType genericSuperclass = (ParameterizedType) getClass().getGenericSuperclass();
+        Type type = genericSuperclass.getActualTypeArguments()[0];
+        if (type instanceof Class) {
+            this.entityClass = (Class<T>) type;
+        } else if (type instanceof ParameterizedType) {
+            this.entityClass = (Class<T>) ((ParameterizedType)type).getRawType();
+        }
     }
 
-    public void set(String key, ValueObject object) {
+    public void set(String key, T object) {
         String fileContents = (new Gson()).toJson(object);
         FileOutputStream outputStream;
 
@@ -57,11 +67,7 @@ public class Storage<ValueObject> {
         return text.toString();
     }
 
-    public ValueObject get(String key) {
-
-        Type sooper = getClass().getGenericSuperclass();
-        Type t = ((ParameterizedType)sooper).getActualTypeArguments()[ 0 ];
-
-        return (ValueObject) (new Gson()).fromJson(readFile(key), t);
+    public T get(String key) {
+        return (new Gson()).fromJson(readFile(key), entityClass);
     }
 }
