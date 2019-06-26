@@ -18,8 +18,10 @@ import com.example.yandexstationshare.api.Api;
 import com.example.yandexstationshare.api.models.Station;
 import com.example.yandexstationshare.api.models.YandexUser;
 import com.example.yandexstationshare.api.request.RequestSend;
+import com.example.yandexstationshare.api.request.RequestStations;
 import com.example.yandexstationshare.logger.DefautLogger;
 import com.example.yandexstationshare.logger.Logger;
+import com.example.yandexstationshare.storage.Storage;
 import com.example.yandexstationshare.ui.webview.MyWebViewClient;
 
 import java.net.MalformedURLException;
@@ -34,7 +36,7 @@ public class WebActivity extends AppCompatActivity {
 
     final private static Logger logger = new DefautLogger();
     final private static Api api = new Api(logger);
-
+    final private Storage<Station> stationStorage = new Storage<>(this);
 
     final class SendTask extends AsyncTask<URL, Void, URL> {
         @Override
@@ -60,6 +62,37 @@ public class WebActivity extends AppCompatActivity {
         }
     }
 
+    final class SendStations extends AsyncTask<YandexUser, Void, Station> {
+        @Override
+        protected Station doInBackground(YandexUser[] objects) {
+            RequestStations requestStations = new RequestStations(objects[0]);
+            try {
+                requestStations.execute();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            return requestStations.getStations().get(0);
+        }
+
+        @Override
+        protected void onPostExecute(Station station) {
+            //register station
+            stationStorage.set("station", station);
+            api.getUser().setStation(station);
+
+            Toast toast = Toast.makeText(getApplicationContext(),
+                    station.getName(),
+                    Toast.LENGTH_SHORT
+            );
+            toast.show();
+
+            onAuth();
+
+            super.onPostExecute(station);
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,16 +101,24 @@ public class WebActivity extends AppCompatActivity {
             final WebView myWebView = new WebView(this);
             myWebView.getSettings().setJavaScriptEnabled(true);
             myWebView.setWebViewClient(new MyWebViewClient((YandexUser user) -> {
-                user.setStation(new Station("04107884c9144c12030f", ""));
                 api.authorization(user);
+                if (stationStorage.get("station") == null) {
+                    //request get station
+                    (new SendStations()).execute(user);
+                    myWebView.setVisibility(View.GONE);
 
-                Toast toast = Toast.makeText(getApplicationContext(),
-                        "Авторизован",
-                        Toast.LENGTH_SHORT
-                );
-                toast.show();
-                myWebView.setVisibility(View.GONE);
-                onAuth();
+                } else {
+
+                    Toast toast = Toast.makeText(getApplicationContext(),
+                            "Авторизован",
+                            Toast.LENGTH_SHORT
+                    );
+
+
+                    toast.show();
+                    myWebView.setVisibility(View.GONE);
+                    onAuth();
+                }
             }));
 
 
@@ -97,6 +138,9 @@ public class WebActivity extends AppCompatActivity {
 
         text.setText("Token: " + user.getToken());
         text1.setText("Session: " + user.getSession());
+        Station station = stationStorage.get("station");
+
+//        text1.setText("Station: " + stationStorage.get("station").getName());
 
         if (send()) {
             finish();

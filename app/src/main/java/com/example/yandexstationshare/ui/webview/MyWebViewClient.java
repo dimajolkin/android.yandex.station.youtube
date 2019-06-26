@@ -66,8 +66,8 @@ public class MyWebViewClient extends WebViewClient {
     public void onPageFinished(final WebView view, String url) {
         String cookies = CookieManager.getInstance().getCookie(url);
         session = getCookie("Session_id", cookies);
-        Log.e("Main", session);
-        Log.e("Main", url);
+//        Log.e("Main", session);
+//        Log.e("Main", url);
 
         if (session == null) {
             super.onPageFinished(view, url);
