@@ -2,6 +2,7 @@ package com.example.yandexstationshare.storage;
 
 import android.content.Context;
 
+import com.example.yandexstationshare.api.models.Station;
 import com.google.gson.Gson;
 
 import java.io.BufferedReader;
@@ -9,9 +10,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
-public class Storage<Type> {
+public class Storage<ValueObject> {
 
     private Context context;
 
@@ -19,7 +21,7 @@ public class Storage<Type> {
         this.context = context;
     }
 
-    public void set(String key, Type object) {
+    public void set(String key, ValueObject object) {
         String fileContents = (new Gson()).toJson(object);
         FileOutputStream outputStream;
 
@@ -32,9 +34,7 @@ public class Storage<Type> {
         }
     }
 
-    public Type get(String key) {
-//        String fileContents = (new Gson()).toJson(object)//        FileOutputStream outputStream;
-
+    protected String readFile(String key) {
         StringBuilder text = new StringBuilder();
         try {
             File file = new File(context.getFilesDir(), key);
@@ -52,8 +52,16 @@ public class Storage<Type> {
 
         } catch (IOException e) {
             e.printStackTrace();
-
         }
-        return (new Gson()).fromJson(text.toString(), this.getClass().getGenericSuperclass());
+
+        return text.toString();
+    }
+
+    public ValueObject get(String key) {
+
+        Type sooper = getClass().getGenericSuperclass();
+        Type t = ((ParameterizedType)sooper).getActualTypeArguments()[ 0 ];
+
+        return (ValueObject) (new Gson()).fromJson(readFile(key), t);
     }
 }
